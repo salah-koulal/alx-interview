@@ -1,52 +1,47 @@
 #!/usr/bin/python3
-"""
-<IP Address> - [<date>]
-"GET /projects/260 HTTP/1.1" <status code>
-"""
 
-
-import signal
 import sys
-import re
-import time
-
-regex = '^([0-9]?[0-9]?[0-9]\.){3}[0-9]?[0-9]?[0-9] \
-- \[\S* \S*] "\S* \S* \S*" [2-5]0[0,1,3,4,5] [0-9]+$'
-ipregex = '^([0-9]?[0-9]?[0-9]\.){3}[0-9]?[0-9]?[0-9]'
-filesizeregex = '[0-9]+$'
-statuscoderegex = '" [2-5]0[0,1,3,4,5]'
-valid_status_code = {
-    "200": 0,
-    "301": 0,
-    "400": 0,
-    "401": 0,
-    "403": 0,
-    "404": 0,
-    "405": 0,
-    "500": 0
-    }
-filesize = 0
-lineindex = 0
 
 
-def show():
-    """display status"""
-    print("File size: {}".format(filesize))
-    for code, num in valid_status_code.items():
-        if num:
-            print("{}: {}".format(code, num))
+def printing(dict_sc, total_file_size):
+    '''print_msg'''
+
+    print("File size: {}".format(total_file_size))
+    for key, val in sorted(dict_sc.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
+
+
+total_file_size = 0
+code = 0
+counter = 0
+dict_sc = {"200": 0,
+           "301": 0,
+           "400": 0,
+           "401": 0,
+           "403": 0,
+           "404": 0,
+           "405": 0,
+           "500": 0}
 
 try:
     for line in sys.stdin:
-        lineindex += 1
-        if re.match(regex, line):
-            statuscode = re.search(statuscoderegex, line).group(0)[2:]
-            filesize += int(re.search(filesizeregex, line).group(0))
-            if statuscode in valid_status_code:
-                valid_status_code[statuscode] += 1
-        if lineindex % 10 == 0:
-            show()
-except Exception:
-    pass
+        parsed_line = line.split()
+        parsed_line = parsed_line[::-1]
+
+        if len(parsed_line) > 2:
+            counter += 1
+
+            if counter <= 10:
+                total_file_size += int(parsed_line[0])
+                code = parsed_line[1]
+
+                if code in dict_sc.keys():
+                    dict_sc[code] += 1
+
+            if counter == 10:
+                printing(dict_sc, total_file_size)
+                counter = 0
+
 finally:
-    show()
+    printing(dict_sc, total_file_size)
