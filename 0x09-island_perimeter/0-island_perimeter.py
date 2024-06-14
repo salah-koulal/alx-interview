@@ -3,7 +3,7 @@
 
 
 def island_perimeter(grid):
-    """ define island_perimeter """
+    """ define island perimeter """
     row, column = len(grid), len(grid[0])
     perimeter = 0
     for i in range(row):
